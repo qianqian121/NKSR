@@ -9,6 +9,7 @@ import glob
 import multiprocessing
 import os.path
 
+import click
 import nksr
 import torch
 from joblib import Parallel, delayed
@@ -39,9 +40,9 @@ def create_scan_from_file(filepath):
     return xyz_np, normals_np
 
 
-def load_pcds():
+def load_pcds(dataset):
     num_cores = multiprocessing.cpu_count()
-    dataset = './result/'
+    # dataset = './result/'
     out_dir = dataset
     pcd_path = os.path.join(dataset, 'opt_global_motion_pcdbin')
     scan_names = sorted(glob.glob(os.path.join(pcd_path, "*.pcd")), reverse=False)
@@ -62,10 +63,35 @@ def load_pcds():
     return xyz_np, normals_np
 
 
-if __name__ == '__main__':
+def load_pcd_file(pcd_file):
+    pcd = o3d.io.read_point_cloud(pcd_file)
+    xyz_np = np.array(pcd.points)
+    normals_np = np.array(pcd.normals)
+    return xyz_np, normals_np
+
+
+@click.command()
+@click.option(
+    "--dataset",
+    "-d",
+    type=click.Path(exists=True),
+    default=os.environ["HOME"] + "/lidar/result",
+    help="Location of the gt pipeline result dataset",
+)
+@click.option(
+    "--out_dir",
+    "-o",
+    type=click.Path(exists=False),
+    default="./lidar/result",
+    help="Where to store the results",
+)
+def main_clean(dataset, out_dir):
+    out_dir = dataset
+
     warning_on_low_memory(20000.0)
+    xyz_np, normals_np = load_pcd_file(dataset)
     # xyz_np, normals_np = load_pcd()
-    xyz_np, normals_np = load_pcds()
+    # xyz_np, normals_np = load_pcds(dataset)
 
     device = torch.device("cuda:0")
     reconstructor = nksr.Reconstructor(device)
@@ -75,11 +101,12 @@ if __name__ == '__main__':
     input_normal = torch.from_numpy(normals_np).float().to(device)
 
     field = reconstructor.reconstruct(
-        input_xyz, normal=input_normal, detail_level=None,
+        # input_xyz, normal=input_normal, detail_level=None,
+        input_xyz, normal=input_normal, detail_level=0.85,
         # Minor configs for better efficiency (not necessary)
         approx_kernel_grad=True, solver_tol=1e-4, fused_mode=True, 
         # Chunked reconstruction (if OOM)
-        chunk_size=51.2
+        # chunk_size=51.2
         # chunk_size=25.6
         # chunk_size=12.8
     )
@@ -92,3 +119,7 @@ if __name__ == '__main__':
     mesh = vis.mesh(mesh.v, mesh.f)
 
     vis.show_3d([mesh], [vis.pointcloud(xyz_np)])
+
+
+if __name__ == '__main__':
+    main_clean()
