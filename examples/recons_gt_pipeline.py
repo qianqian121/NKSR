@@ -102,7 +102,12 @@ def main_clean(dataset, out_dir):
 
     field = reconstructor.reconstruct(
         # input_xyz, normal=input_normal, detail_level=None,
-        input_xyz, normal=input_normal, detail_level=0.85,
+        # input_xyz, normal=input_normal, detail_level=1.0,
+        input_xyz, normal=input_normal, detail_level=0.99014332,
+        # input_xyz, normal=input_normal, detail_level=0.9901,
+        # input_xyz, normal=input_normal, detail_level=0.99,
+        # input_xyz, normal=input_normal, detail_level=0.95,
+        # input_xyz, normal=input_normal, detail_level=0.85,
         # Minor configs for better efficiency (not necessary)
         approx_kernel_grad=True, solver_tol=1e-4, fused_mode=True, 
         # Chunked reconstruction (if OOM)
