@@ -101,9 +101,9 @@ def main_clean(dataset, out_dir):
     input_normal = torch.from_numpy(normals_np).float().to(device)
 
     field = reconstructor.reconstruct(
-        # input_xyz, normal=input_normal, detail_level=None,
+        input_xyz, normal=input_normal, detail_level=None,
         # input_xyz, normal=input_normal, detail_level=1.0,
-        input_xyz, normal=input_normal, detail_level=0.99014332,
+        # input_xyz, normal=input_normal, detail_level=0.99014332,
         # input_xyz, normal=input_normal, detail_level=0.9901,
         # input_xyz, normal=input_normal, detail_level=0.99,
         # input_xyz, normal=input_normal, detail_level=0.95,
@@ -111,6 +111,9 @@ def main_clean(dataset, out_dir):
         # Minor configs for better efficiency (not necessary)
         approx_kernel_grad=True, solver_tol=1e-4, fused_mode=True, 
         # Chunked reconstruction (if OOM)
+        chunk_size=168
+        # chunk_size=160
+        # chunk_size=128
         # chunk_size=51.2
         # chunk_size=25.6
         # chunk_size=12.8
